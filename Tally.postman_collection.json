@@ -1,0 +1,164 @@
+{
+	"info": {
+		"_postman_id": "778d8d70-7c52-434b-bf51-3d42474114d4",
+		"name": "Tally",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET Account",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account?name=James",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"account"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "James"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register Account",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\" : \"James\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"account",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Asset Intent",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\" : \"Andy\",\n\t\"asset\": \"ABC\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets?name=James",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"account",
+						"assets"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "James"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Asset Intent",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\" : \"James\",\n\t\"asset\": \"EFG\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"account",
+						"assets",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Assets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/assets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"assets"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

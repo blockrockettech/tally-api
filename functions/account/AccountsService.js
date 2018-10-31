@@ -1,4 +1,5 @@
 const StellarGateway = require('../stellar/StellarGateway');
+const _ = require('lodash');
 
 class AccountsService {
 
@@ -56,19 +57,57 @@ class AccountsService {
             });
     }
 
-    async listAssets(account) {
-
-
+    async listAllAssets() {
+        return this.firestore
+            .collection(`users`)
+            .get()
+            .then(snapshot => {
+                let users = [];
+                snapshot.forEach(doc => {
+                    users.push(doc.data());
+                });
+                return users;
+            })
+            .then(async users => {
+                const promises = users.map((user) => this.listAssets(user));
+                const results = await Promise.all(promises);
+                return _.flatten(results);
+            })
+            .catch(err => {
+                console.log('Error getting documents', err);
+                return null;
+            });
     }
 
-    async createAssetIntent(account, asset) {
-        const {publicKey, secretKey, name} = account;
+    async listAssets(account) {
+        const {name} = account;
 
-        const foundAsset = await this.firestore
+        return this.firestore
             .collection(`users`)
             .doc(name)
             .collection(`assets`)
-            .doc(asset)
+            .get()
+            .then(snapshot => {
+                const assets = [];
+                snapshot.forEach(doc => {
+                    assets.push(doc.data());
+                });
+                return assets;
+            })
+            .catch(err => {
+                console.log('Error getting documents', err);
+                return null;
+            });
+    }
+
+    async createAssetIntent(account, asset) {
+        const {publicKey, name} = account;
+
+        const accountAssetsRes = this.firestore
+            .collection(`users`).doc(name)
+            .collection(`assets`).doc(asset);
+
+        const foundAsset = await accountAssetsRes
             .get()
             .then(doc => {
                 if (doc.exists) {
@@ -84,16 +123,12 @@ class AccountsService {
 
         const data = {
             asset,
+            name,
             publicKey,
-            onNetwork: false,
             registered: Date.now()
         };
 
-        return this.firestore
-            .collection(`users`)
-            .doc(name)
-            .collection(`assets`)
-            .doc(asset)
+        return accountAssetsRes
             .set(data)
             .then(() => {
                 console.log("Created custom asset");

@@ -47,6 +47,13 @@ app.post('/account/register', async (req, res) => {
     });
 });
 
+app.get('/assets', async (req, res) => {
+    const assets = await accountsService.listAllAssets();
+    return res.status(200).json({
+        ...assets
+    });
+});
+
 app.get('/account/assets', async (req, res) => {
     const name = req.query.name;
 
