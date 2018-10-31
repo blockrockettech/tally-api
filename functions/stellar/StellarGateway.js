@@ -48,6 +48,13 @@ class StellarGateway {
         return server.submitTransaction(transaction);
     }
 
+    static async createAsset(account, assetCode) {
+        const {publicKey} = account;
+
+        const customAsset = new StellarSdk.Asset(assetCode, publicKey);
+
+    }
+
 }
 
 module.exports = StellarGateway;

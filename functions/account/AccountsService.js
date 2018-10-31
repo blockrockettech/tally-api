@@ -38,7 +38,9 @@ class AccountsService {
 
         await StellarGateway.fundMinimumBalance(keyPair);
 
-        return this.firestore.collection(`users`).doc(name)
+        return this.firestore
+            .collection(`users`)
+            .doc(name)
             .set({
                 name,
                 ...keyPair,
@@ -56,9 +58,51 @@ class AccountsService {
 
     async listAssets(account) {
 
+
     }
 
-    async createAsset(account, asset) {
+    async createAssetIntent(account, asset) {
+        const {publicKey, secretKey, name} = account;
+
+        const foundAsset = await this.firestore
+            .collection(`users`)
+            .doc(name)
+            .collection(`assets`)
+            .doc(asset)
+            .get()
+            .then(doc => {
+                if (doc.exists) {
+                    return doc.data();
+                }
+                return null;
+            });
+
+        if (foundAsset) {
+            console.log("Already created asset, returning it");
+            return foundAsset;
+        }
+
+        const data = {
+            asset,
+            publicKey,
+            onNetwork: false,
+            registered: Date.now()
+        };
+
+        return this.firestore
+            .collection(`users`)
+            .doc(name)
+            .collection(`assets`)
+            .doc(asset)
+            .set(data)
+            .then(() => {
+                console.log("Created custom asset");
+                return data;
+            })
+            .catch((error) => {
+                console.error("Error registering custom asset: ", error);
+                throw error;
+            });
 
     }
 

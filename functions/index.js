@@ -66,7 +66,7 @@ app.post('/account/assets/create', async (req, res) => {
     const account = await accountsService.getByName(name);
     validateAccountFound(res, account);
 
-    const assets = await accountsService.createAsset(account, asset);
+    const assets = await accountsService.createAssetIntent(account, asset);
     return res.status(200).json({
         ...assets
     });
