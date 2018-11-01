@@ -11,20 +11,16 @@ class AccountsService {
     async getByName(name) {
         console.log(`Looking up account by name [${name}]`);
 
-        return this.firestore.collection(`users`).doc(name)
-            .get()
-            .then(function (doc) {
-                if (doc.exists) {
-                    const account = doc.data();
-                    console.log("Found account:", account);
-                    return account;
-                }
+        const doc = await this.firestore.collection(`users`).doc(name).get();
 
-                console.log("No account found");
-                return null;
-            }).catch(function (error) {
-                console.log("Error getting document:", error);
-            });
+        if (doc.exists) {
+            const account = doc.data();
+            console.log("Found account:", account);
+            return account;
+        }
+
+        console.log("No account found");
+        return null;
     }
 
     async register(name) {
@@ -39,9 +35,7 @@ class AccountsService {
 
         await StellarGateway.fundMinimumBalance(keyPair);
 
-        return this.firestore
-            .collection(`users`)
-            .doc(name)
+        return this.firestore.collection(`users`).doc(name)
             .set({
                 name,
                 ...keyPair,
@@ -58,46 +52,32 @@ class AccountsService {
     }
 
     async listAllAssets() {
-        return this.firestore
-            .collection(`users`)
-            .get()
-            .then(snapshot => {
-                let users = [];
-                snapshot.forEach(doc => {
-                    users.push(doc.data());
-                });
-                return users;
-            })
-            .then(async users => {
-                const promises = users.map((user) => this.listAssets(user));
-                const results = await Promise.all(promises);
-                return _.flatten(results);
-            })
-            .catch(err => {
-                console.log('Error getting documents', err);
-                return null;
-            });
+        const snapshot = await this.firestore.collection(`users`).get();
+
+        let users = [];
+        snapshot.forEach(doc => {
+            users.push(doc.data());
+        });
+
+        const promises = users.map((user) => this.listAssets(user));
+        const results = await Promise.all(promises);
+
+        return _.flatten(results);
     }
 
     async listAssets(account) {
         const {name} = account;
 
-        return this.firestore
-            .collection(`users`)
-            .doc(name)
+        const snapshot = await this.firestore
+            .collection(`users`).doc(name)
             .collection(`assets`)
-            .get()
-            .then(snapshot => {
-                const assets = [];
-                snapshot.forEach(doc => {
-                    assets.push(doc.data());
-                });
-                return assets;
-            })
-            .catch(err => {
-                console.log('Error getting documents', err);
-                return null;
-            });
+            .get();
+
+        const assets = [];
+        snapshot.forEach(doc => {
+            assets.push(doc.data());
+        });
+        return assets;
     }
 
     async createAssetIntent(account, asset) {
@@ -107,8 +87,7 @@ class AccountsService {
             .collection(`users`).doc(name)
             .collection(`assets`).doc(asset);
 
-        const foundAsset = await accountAssetsRes
-            .get()
+        const foundAsset = await accountAssetsRes.get()
             .then(doc => {
                 if (doc.exists) {
                     return doc.data();
@@ -128,8 +107,7 @@ class AccountsService {
             registered: Date.now()
         };
 
-        return accountAssetsRes
-            .set(data)
+        return accountAssetsRes.set(data)
             .then(() => {
                 console.log("Created custom asset");
                 return data;
@@ -138,7 +116,22 @@ class AccountsService {
                 console.error("Error registering custom asset: ", error);
                 throw error;
             });
+    }
 
+    async transfer(fromAccount, toAccount, asset, amount) {
+        const hasTrustline = await StellarGateway.trustlineExists(fromAccount, toAccount, asset);
+        if (!hasTrustline) {
+            await StellarGateway.setupTrustline(fromAccount, toAccount, asset);
+        }
+
+        return StellarGateway.transferCustomAsset(fromAccount, toAccount, asset, amount)
+            .then(() => {
+                return true;
+            })
+            .catch((error) => {
+                console.log(error);
+                throw error;
+            });
     }
 
 }

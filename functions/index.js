@@ -79,6 +79,28 @@ app.post('/account/assets/create', async (req, res) => {
     });
 });
 
+app.post('/transfer', async (req, res) => {
+    const from = req.body.from;
+    const to = req.body.to;
+    const asset = req.body.asset;
+    const amount = req.body.amount;
+
+    const fromAccount = await accountsService.getByName(from);
+    validateAccountFound(res, fromAccount);
+
+    const toAccount = await accountsService.getByName(to);
+    validateAccountFound(res, toAccount);
+
+    const success = await accountsService.transfer(fromAccount, toAccount, asset, amount);
+    return res.status(200).json({
+        success
+    });
+});
+
+app.post('/transfer', async (req, re) => {
+
+});
+
 const validateAccountFound = (res, account) => {
     if (!account) {
         return res
