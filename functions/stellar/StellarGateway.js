@@ -48,7 +48,7 @@ class StellarGateway {
         return server.submitTransaction(transaction);
     }
 
-    static async transferCustomAsset(fromAccount, toAccount, asset, amount) {
+    static async transferCustomAsset(fromAccount, toAccount, issuerAccount, asset, amount) {
         const {publicKey: fromPublicKey, secretKey: fromSecretKey} = fromAccount;
         const {publicKey: toPublicKey} = toAccount;
 
@@ -56,15 +56,15 @@ class StellarGateway {
 
         const account = await server.loadAccount(ACCOUNTS_PAYABLE.publicKey);
 
-        const customAssetToSend = new StellarSdk.Asset(asset, fromPublicKey);
 
         const transaction = new StellarSdk.TransactionBuilder(account)
             .addOperation(StellarSdk.Operation.payment({
+                asset: new StellarSdk.Asset(asset, issuerAccount.publicKey),
                 destination: toPublicKey,
-                asset: customAssetToSend,
                 amount: `${amount}`,
                 source: fromPublicKey // the account the operation is run on/against
-            })).build();
+            }))
+            .build();
 
         // Requester signs it
         transaction.sign(StellarSdk.Keypair.fromSecret(fromSecretKey));
@@ -76,36 +76,40 @@ class StellarGateway {
         return server.submitTransaction(transaction);
     }
 
-    static async trustlineExists(fromAccount, toAccount, asset) {
-        const {publicKey: fromPublicKey} = fromAccount;
+    static async trustlineExists(toAccount, issuerAccount, asset) {
         const {publicKey: toPublicKey} = toAccount;
+        const {publicKey: issuerPublicKey} = issuerAccount;
+
+        if (toPublicKey === issuerPublicKey) {
+            console.log(`Skipping trustline creation between the same account [${issuerPublicKey}]`);
+            return true;
+        }
 
         const account = await server.loadAccount(toPublicKey);
 
         const trustlineFound = account.balances.some((balance) => {
             return balance.asset_code === asset
-                && balance.asset_issuer === fromPublicKey
+                && balance.asset_issuer === issuerPublicKey
                 && balance.limit > 0;
         });
-        console.log(`Checking trustline exist for issuer [${fromPublicKey}] asset [${asset}] to [${toPublicKey}] - exists = [${trustlineFound}]`);
+        console.log(`Checking trustline exist for issuer [${issuerPublicKey}] asset [${asset}] to [${toPublicKey}] - exists = [${trustlineFound}]`);
 
         return trustlineFound;
     }
 
-    static async setupTrustline(fromAccount, toAccount, asset, amount = '10000000') {
-        const {publicKey: fromPublicKey} = fromAccount;
-        const {publicKey: toPublicKey, secretKey: toSecretKey} = toAccount;
+    static async setupTrustline(toAccount, issuerAccount, asset, limit = '10000000') {
 
-        console.log(`Setting up trustline between issuer [${fromPublicKey}] asset [${asset}] to [${toPublicKey}] amount [${amount}]`);
+        const {publicKey: toPublicKey, secretKey: toSecretKey} = toAccount;
+        const {publicKey: issuerPublicKey} = issuerAccount;
+
+        console.log(`Setting up trustline between issuer [${issuerPublicKey}] asset [${asset}] to [${toPublicKey}] limit [${limit}]`);
 
         const account = await server.loadAccount(ACCOUNTS_PAYABLE.publicKey);
 
-        const trustlineAsset = new StellarSdk.Asset(asset, fromPublicKey);
-
         const transaction = new StellarSdk.TransactionBuilder(account)
             .addOperation(StellarSdk.Operation.changeTrust({
-                asset: trustlineAsset,
-                limit: amount,
+                asset: new StellarSdk.Asset(asset, issuerPublicKey),
+                limit: limit,
                 source: toPublicKey // the account the operation is run on/against
             }))
             .build();

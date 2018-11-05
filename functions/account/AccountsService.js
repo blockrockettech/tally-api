@@ -1,5 +1,6 @@
 const StellarGateway = require('../stellar/StellarGateway');
 const _ = require('lodash');
+const util = require('util');
 
 class AccountsService {
 
@@ -118,20 +119,33 @@ class AccountsService {
             });
     }
 
-    async transfer(fromAccount, toAccount, asset, amount) {
-        const hasTrustline = await StellarGateway.trustlineExists(fromAccount, toAccount, asset);
-        if (!hasTrustline) {
-            await StellarGateway.setupTrustline(fromAccount, toAccount, asset);
-        }
+    async transfer(fromAccount, toAccount, issuerAccount, asset, amount) {
+        try {
+            console.log("fromAccount.publicKey", fromAccount.publicKey);
+            console.log("toAccount.publicKey", toAccount.publicKey);
+            console.log("issuerAccount.publicKey", issuerAccount.publicKey);
 
-        return StellarGateway.transferCustomAsset(fromAccount, toAccount, asset, amount)
-            .then(() => {
-                return true;
-            })
-            .catch((error) => {
-                console.log(error);
-                throw error;
-            });
+            const fromHasTrustline = await StellarGateway.trustlineExists(fromAccount, issuerAccount, asset.asset);
+            if (!fromHasTrustline) {
+                await StellarGateway.setupTrustline(fromAccount, issuerAccount, asset.asset);
+            }
+
+            const toHasTrustline = await StellarGateway.trustlineExists(toAccount, issuerAccount, asset.asset);
+            if (!toHasTrustline) {
+                await StellarGateway.setupTrustline(toAccount, issuerAccount, asset.asset);
+            }
+
+            return StellarGateway.transferCustomAsset(fromAccount, toAccount, issuerAccount, asset.asset, amount)
+                .then(() => {
+                    return true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    throw error;
+                });
+        } catch (e) {
+            console.log(JSON.stringify(e.response.data));
+        }
     }
 
 }

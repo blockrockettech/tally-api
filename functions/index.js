@@ -91,14 +91,13 @@ app.post('/transfer', async (req, res) => {
     const toAccount = await accountsService.getByName(to);
     validateAccountFound(res, toAccount);
 
-    const success = await accountsService.transfer(fromAccount, toAccount, asset, amount);
+    const issuerAccount = await accountsService.getByName(asset.issuer);
+    validateAccountFound(res, issuerAccount);
+
+    const success = await accountsService.transfer(fromAccount, toAccount, issuerAccount, asset, amount);
     return res.status(200).json({
         success
     });
-});
-
-app.post('/transfer', async (req, re) => {
-
 });
 
 const validateAccountFound = (res, account) => {
