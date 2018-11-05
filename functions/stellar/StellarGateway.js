@@ -48,14 +48,40 @@ class StellarGateway {
         return server.submitTransaction(transaction);
     }
 
+    static async transferNative(fromAccount, toAccount, amount) {
+        const {publicKey: fromPublicKey, secretKey: fromSecretKey} = fromAccount;
+        const {publicKey: toPublicKey} = toAccount;
+
+        console.log(`Transferring XLM from [${fromPublicKey}] to [${toPublicKey}]`);
+
+        const account = await server.loadAccount(ACCOUNTS_PAYABLE.publicKey);
+
+        const transaction = new StellarSdk.TransactionBuilder(account)
+            .addOperation(StellarSdk.Operation.payment({
+                asset: new StellarSdk.Asset.native(),
+                destination: toPublicKey,
+                amount: `${amount}`,
+                source: fromPublicKey // the account the operation is run on/against
+            }))
+            .build();
+
+        // Requester signs it
+        transaction.sign(StellarSdk.Keypair.fromSecret(fromSecretKey));
+
+        // Fee payer signs it
+        transaction.sign(StellarSdk.Keypair.fromSecret(ACCOUNTS_PAYABLE.secretKey));
+
+        // Submit to the network
+        return server.submitTransaction(transaction);
+    }
+
     static async transferCustomAsset(fromAccount, toAccount, issuerAccount, asset, amount) {
         const {publicKey: fromPublicKey, secretKey: fromSecretKey} = fromAccount;
         const {publicKey: toPublicKey} = toAccount;
 
-        console.log(`Transfering asset from issuer [${fromPublicKey}:${asset}] to [${toPublicKey}]`);
+        console.log(`Transferring asset [${asset}] from issuer [${fromPublicKey}] to [${toPublicKey}]`);
 
         const account = await server.loadAccount(ACCOUNTS_PAYABLE.publicKey);
-
 
         const transaction = new StellarSdk.TransactionBuilder(account)
             .addOperation(StellarSdk.Operation.payment({
@@ -123,6 +149,33 @@ class StellarGateway {
         return server.submitTransaction(transaction);
     }
 
+    static async revokeTrustline(toAccount, issuerAccount, asset) {
+        // Note: A user cannot revoke a tustline if they are holding assets of this type
+        // Note: The issuer can revoke a trustline and any of the issuers assets held by the account are locked
+
+        const {publicKey: toPublicKey, secretKey: toSecretKey} = toAccount;
+        const {publicKey: issuerPublicKey} = issuerAccount;
+
+        console.log(`Revoking trustline between issuer [${issuerPublicKey}] asset [${asset}] to [${toPublicKey}]`);
+
+        const account = await server.loadAccount(ACCOUNTS_PAYABLE.publicKey);
+
+        const transaction = new StellarSdk.TransactionBuilder(account)
+            .addOperation(StellarSdk.Operation.changeTrust({
+                asset: new StellarSdk.Asset(asset, issuerPublicKey),
+                limit: '0', // Set to ZERO to clear
+                source: toPublicKey // the account the operation is run on/against
+            }))
+            .build();
+
+        // Source signs it
+        transaction.sign(StellarSdk.Keypair.fromSecret(toSecretKey));
+
+        // Fee payer signs it
+        transaction.sign(StellarSdk.Keypair.fromSecret(ACCOUNTS_PAYABLE.secretKey));
+
+        return server.submitTransaction(transaction);
+    }
 }
 
 module.exports = StellarGateway;

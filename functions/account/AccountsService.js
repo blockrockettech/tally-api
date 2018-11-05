@@ -121,10 +121,6 @@ class AccountsService {
 
     async transfer(fromAccount, toAccount, issuerAccount, asset, amount) {
         try {
-            console.log("fromAccount.publicKey", fromAccount.publicKey);
-            console.log("toAccount.publicKey", toAccount.publicKey);
-            console.log("issuerAccount.publicKey", issuerAccount.publicKey);
-
             const fromHasTrustline = await StellarGateway.trustlineExists(fromAccount, issuerAccount, asset.asset);
             if (!fromHasTrustline) {
                 await StellarGateway.setupTrustline(fromAccount, issuerAccount, asset.asset);
@@ -136,6 +132,43 @@ class AccountsService {
             }
 
             return StellarGateway.transferCustomAsset(fromAccount, toAccount, issuerAccount, asset.asset, amount)
+                .then(() => {
+                    return true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    throw error;
+                });
+        } catch (e) {
+            console.log(JSON.stringify(e.response.data));
+        }
+    }
+
+    async transferNative(fromAccount, toAccount, amount) {
+        try {
+            return StellarGateway.transferNative(fromAccount, toAccount, amount)
+                .then(() => {
+                    return true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    throw error;
+                });
+        } catch (e) {
+            console.log(JSON.stringify(e.response.data));
+        }
+    }
+
+    async revokeTrustline(toAccount, issuerAccount, asset) {
+        try {
+            const toHasTrustline = await StellarGateway.trustlineExists(toAccount, issuerAccount, asset);
+
+            if (!toHasTrustline) {
+                console.log("Not revoking trustline which does not exist");
+                return true;
+            }
+
+            return StellarGateway.revokeTrustline(toAccount, issuerAccount, asset)
                 .then(() => {
                     return true;
                 })

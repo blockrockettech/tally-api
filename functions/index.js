@@ -79,6 +79,23 @@ app.post('/account/assets/create', async (req, res) => {
     });
 });
 
+app.post('/account/assets/revoke', async (req, res) => {
+    const to = req.body.to;
+    const asset = req.body.asset;
+    const issuer = req.body.issuer;
+
+    const toAccount = await accountsService.getByName(to);
+    validateAccountFound(res, toAccount);
+
+    const issuerAccount = await accountsService.getByName(issuer);
+    validateAccountFound(res, issuerAccount);
+
+    const success = await accountsService.revokeTrustline(toAccount, issuerAccount, asset);
+    return res.status(200).json({
+        success
+    });
+});
+
 app.post('/transfer', async (req, res) => {
     const from = req.body.from;
     const to = req.body.to;
@@ -95,6 +112,23 @@ app.post('/transfer', async (req, res) => {
     validateAccountFound(res, issuerAccount);
 
     const success = await accountsService.transfer(fromAccount, toAccount, issuerAccount, asset, amount);
+    return res.status(200).json({
+        success
+    });
+});
+
+app.post('/transfer/native', async (req, res) => {
+    const from = req.body.from;
+    const to = req.body.to;
+    const amount = req.body.amount;
+
+    const fromAccount = await accountsService.getByName(from);
+    validateAccountFound(res, fromAccount);
+
+    const toAccount = await accountsService.getByName(to);
+    validateAccountFound(res, toAccount);
+
+    const success = await accountsService.transferNative(fromAccount, toAccount, amount);
     return res.status(200).json({
         success
     });
