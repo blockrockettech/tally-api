@@ -152,6 +152,7 @@ class StellarGateway {
     static async revokeTrustline(toAccount, issuerAccount, asset) {
         // Note: A user cannot revoke a tustline if they are holding assets of this type
         // Note: The issuer can revoke a trustline and any of the issuers assets held by the account are locked
+        // Note: Revoking a trustline will remove the locked up 0.5 XLM per account
 
         const {publicKey: toPublicKey, secretKey: toSecretKey} = toAccount;
         const {publicKey: issuerPublicKey} = issuerAccount;
