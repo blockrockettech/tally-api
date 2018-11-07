@@ -1,0 +1,44 @@
+@startuml
+
+actor User
+boundary MobileApp
+
+alt
+group user sign up
+
+
+User -> MobileApp: user/pass
+MobileApp -> TallyAPI: register
+
+note right: Add SMS verification\nto prevent spam
+
+TallyAPI --> TallyAPI: create user
+
+database TallyDB
+TallyDB <--> TallyAPI : persist user
+
+database Stellar
+TallyAPI -> Stellar: create XLM\naccount
+Stellar --> TallyAPI: pub/pri key
+
+TallyAPI <--> TallyDB: persist keys
+
+TallyAPI --> MobileApp: success
+
+MobileApp --> User: success
+
+
+end
+
+alt
+group user login
+
+User -> MobileApp: user/pass
+MobileApp -> TallyAPI: login
+MobileApp<--TallyAPI: success
+MobileApp --> User: present tally
+
+end
+
+
+@enduml

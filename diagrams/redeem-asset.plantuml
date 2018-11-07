@@ -1,0 +1,40 @@
+@startuml
+
+actor User
+actor Merchant
+boundary MobileApp
+
+
+alt
+group redeem asset
+
+    group user presents QR
+
+        User -> MobileApp: finds asset
+        User <--> Merchant: present QR code
+
+    end
+
+    group merchant scans QR
+
+        Merchant <--> MobileApp: open app
+
+        MobileApp <--> User: scans QR code
+
+        MobileApp -> TallyAPI: send asset
+
+        TallyAPI --> TallyAPI: valid
+
+        TallyAPI <--> Stellar: send asset
+
+        TallyAPI -> MobileApp: confirmation
+
+        MobileApp -> Merchant: balance changed
+
+        TallyAPI -> User: asset received
+
+    end
+
+end
+
+@enduml
