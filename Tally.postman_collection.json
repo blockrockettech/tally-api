@@ -10,9 +10,12 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
 				"url": {
-					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account?name=Bobby",
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account?name=Bob",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -27,7 +30,7 @@
 					"query": [
 						{
 							"key": "name",
-							"value": "Bobby"
+							"value": "Bob"
 						}
 					]
 				}
@@ -46,7 +49,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\" : \"Bobby\"\n}"
+					"raw": "{\n\t\"name\" : \"Jim\"\n}"
 				},
 				"url": {
 					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/register",
@@ -78,10 +81,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\" : \"Andy\",\n\t\"asset\": \"ABC\"\n}"
+					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets?name=Bobby",
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets?name=Bob",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -97,7 +100,7 @@
 					"query": [
 						{
 							"key": "name",
-							"value": "Bobby"
+							"value": "Bob"
 						}
 					]
 				}
@@ -116,7 +119,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\" : \"Bobby\",\n\t\"asset\": \"ABC\"\n}"
+					"raw": "{\n\t\"name\" : \"T-Pot\",\n\t\"asset\": \"LONGBLK\"\n}"
 				},
 				"url": {
 					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets/create",
@@ -142,7 +145,10 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
 				"url": {
 					"raw": "http://localhost:5000/tally-eab26/us-central1/app/assets",
 					"protocol": "http",
@@ -172,7 +178,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"from\" : \"Bobby\",\n\t\"to\" : \"James\",\n\t\"asset\": \"ABC\",\n\t\"amount\": 100\n}"
+					"raw": "{\n\t\"from\" : \"Bob\",\n\t\"to\" : \"Jim\",\n\t\"amount\": 100,\n\t\"asset\": {\n\t\t\"issuer\": \"T-Pot\",\n\t\t\"asset\": \"FLATWH\"\n\t}\n}"
 				},
 				"url": {
 					"raw": "http://localhost:5000/tally-eab26/us-central1/app/transfer",
@@ -186,6 +192,71 @@
 						"us-central1",
 						"app",
 						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transfer Native",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"from\" : \"Bob\",\n\t\"to\" : \"Jim\",\n\t\"amount\": 0.5\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/transfer/native",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"transfer",
+						"native"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Revoke Trustline",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"to\" : \"Bob\",\n\t\"issuer\" : \"T-Pot\",\n\t\"asset\": \"FLATWH\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/tally-eab26/us-central1/app/account/assets/revoke",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"tally-eab26",
+						"us-central1",
+						"app",
+						"account",
+						"assets",
+						"revoke"
 					]
 				}
 			},

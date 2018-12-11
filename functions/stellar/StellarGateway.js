@@ -177,6 +177,10 @@ class StellarGateway {
 
         return server.submitTransaction(transaction);
     }
+
+    static async loadAccount(publicKey) {
+        return server.loadAccount(publicKey);
+    }
 }
 
 module.exports = StellarGateway;

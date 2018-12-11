@@ -32,6 +32,7 @@ app.get('/account', async (req, res) => {
     return res.status(200).json({
         name: account.name,
         publicKey: account.publicKey,
+        balances: account.balances
     });
 });
 

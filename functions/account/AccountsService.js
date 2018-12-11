@@ -17,7 +17,11 @@ class AccountsService {
         if (doc.exists) {
             const account = doc.data();
             console.log("Found account:", account);
-            return account;
+
+            const stellarAcc = await StellarGateway.loadAccount(account.publicKey);
+            console.log(stellarAcc);
+
+            return {...account, balances: stellarAcc.balances};
         }
 
         console.log("No account found");
